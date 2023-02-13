@@ -36,7 +36,6 @@ DynamicJsonDocument _fwCommandSchema(JSON_COMMAND_MAX_SIZE);
 jsonCallback _onConfig;
 jsonCallback _onCommand;
 
-
 /* JSON helpers */
 void _mergeJson(JsonVariant dst, JsonVariantConst src)
 {
@@ -141,7 +140,7 @@ void _getCommandSchemaJson(JsonVariant json)
     _mergeJson(properties, _fwCommandSchema.as<JsonVariant>());
   }
 
-  // GPIO32 commands
+  // Generic commands
   JsonObject restart = properties.createNestedObject("restart");
   restart["title"] = "Restart";
   restart["type"] = "boolean";
@@ -171,7 +170,7 @@ void _mqttConnected()
   _mqtt.publishAdopt(_api.getAdopt(json.as<JsonVariant>()));
 
   // Log the fact we are now connected
-  _logger.println("[gp32] mqtt connected");
+  _logger.println("[esp32] mqtt connected");
 }
 
 void _mqttDisconnected(int state) 
@@ -181,31 +180,31 @@ void _mqttDisconnected(int state)
   switch (state)
   {
     case MQTT_CONNECTION_TIMEOUT:
-      _logger.println(F("[gp32] mqtt connection timeout"));
+      _logger.println(F("[esp32] mqtt connection timeout"));
       break;
     case MQTT_CONNECTION_LOST:
-      _logger.println(F("[gp32] mqtt connection lost"));
+      _logger.println(F("[esp32] mqtt connection lost"));
       break;
     case MQTT_CONNECT_FAILED:
-      _logger.println(F("[gp32] mqtt connect failed"));
+      _logger.println(F("[esp32] mqtt connect failed"));
       break;
     case MQTT_DISCONNECTED:
-      _logger.println(F("[gp32] mqtt disconnected"));
+      _logger.println(F("[esp32] mqtt disconnected"));
       break;
     case MQTT_CONNECT_BAD_PROTOCOL:
-      _logger.println(F("[gp32] mqtt bad protocol"));
+      _logger.println(F("[esp32] mqtt bad protocol"));
       break;
     case MQTT_CONNECT_BAD_CLIENT_ID:
-      _logger.println(F("[gp32] mqtt bad client id"));
+      _logger.println(F("[esp32] mqtt bad client id"));
       break;
     case MQTT_CONNECT_UNAVAILABLE:
-      _logger.println(F("[gp32] mqtt unavailable"));
+      _logger.println(F("[esp32] mqtt unavailable"));
       break;
     case MQTT_CONNECT_BAD_CREDENTIALS:
-      _logger.println(F("[gp32] mqtt bad credentials"));
+      _logger.println(F("[esp32] mqtt bad credentials"));
       break;      
     case MQTT_CONNECT_UNAUTHORIZED:
-      _logger.println(F("[gp32] mqtt unauthorised"));
+      _logger.println(F("[esp32] mqtt unauthorised"));
       break;      
   }
 }
@@ -235,25 +234,21 @@ void _mqttCallback(char * topic, byte * payload, int length)
   switch (state)
   {
     case MQTT_RECEIVE_ZERO_LENGTH:
-      _logger.println(F("[gp32] empty mqtt payload received"));
+      _logger.println(F("[esp32] empty mqtt payload received"));
       break;
     case MQTT_RECEIVE_JSON_ERROR:
-      _logger.println(F("[gp32] failed to deserialise mqtt json payload"));
+      _logger.println(F("[esp32] failed to deserialise mqtt json payload"));
       break;
     case MQTT_RECEIVE_NO_CONFIG_HANDLER:
-      _logger.println(F("[gp32] no mqtt config handler"));
+      _logger.println(F("[esp32] no mqtt config handler"));
       break;
     case MQTT_RECEIVE_NO_COMMAND_HANDLER:
-      _logger.println(F("[gp32] no mqtt command handler"));
+      _logger.println(F("[esp32] no mqtt command handler"));
       break;
   }
 }
 
 /* Main program */
-OXRS_32::OXRS_32(void)
-{
-}
-
 void OXRS_32::setMqttBroker(const char * broker, uint16_t port)
 {
   _mqtt.setBroker(broker, port);
@@ -286,7 +281,7 @@ void OXRS_32::begin(jsonCallback config, jsonCallback command)
   _getFirmwareJson(json.as<JsonVariant>());
 
   // Log firmware details
-  _logger.print(F("[gp32] "));
+  _logger.print(F("[esp32] "));
   serializeJson(json, _logger);
   _logger.println();
 
@@ -310,15 +305,12 @@ void OXRS_32::loop(void)
   // Check our network connection
   if (_isNetworkConnected())
   {
-    // Maintain our DHCP lease
-    
     // Handle any MQTT messages
     _mqtt.loop();
     
     // Handle any REST API requests
     WiFiClient client = _server.available();
     _api.loop(&client);
-
   }
 }
 
@@ -348,18 +340,14 @@ boolean OXRS_32::publishStatus(JsonVariant json)
 {
   // Exit early if no network connection
   if (!_isNetworkConnected()) { return false; }
-
-  boolean success = _mqtt.publishStatus(json);
-  return success;
+  return _mqtt.publishStatus(json);
 }
 
 boolean OXRS_32::publishTelemetry(JsonVariant json)
 {
   // Exit early if no network connection
   if (!_isNetworkConnected()) { return false; }
-
-  boolean success = _mqtt.publishTelemetry(json);
-  return success;
+  return _mqtt.publishTelemetry(json);
 }
 
 size_t OXRS_32::write(uint8_t character)
@@ -377,7 +365,7 @@ void OXRS_32::_initialiseNetwork(byte * mac)
   char mac_display[18];
   sprintf_P(mac_display, PSTR("%02X:%02X:%02X:%02X:%02X:%02X"), mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  _logger.print(F("[gp32] wifi mac address: "));
+  _logger.print(F("[esp32] wifi mac address: "));
   _logger.println(mac_display);
 
   // Ensure we are in the correct WiFi mode
@@ -388,7 +376,7 @@ void OXRS_32::_initialiseNetwork(byte * mac)
   WiFiManager wm;
   bool success = wm.autoConnect("OXRS_WiFi", "superhouse");
 
-  _logger.print(F("[gp32] ip address: "));
+  _logger.print(F("[esp32] ip address: "));
   _logger.println(success ? WiFi.localIP() : IPAddress(0, 0, 0, 0));
 }
 

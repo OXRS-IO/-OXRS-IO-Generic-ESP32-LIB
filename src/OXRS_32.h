@@ -18,8 +18,6 @@
 class OXRS_32 : public Print
 {
   public:
-    OXRS_32(void);
-
     // These are only needed if performing manual configuration in your sketch, otherwise
     // config is provisioned via the API and bootstrap page
     void setMqttBroker(const char * broker, uint16_t port);
