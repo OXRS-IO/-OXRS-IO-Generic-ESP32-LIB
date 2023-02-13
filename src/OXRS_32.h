@@ -8,6 +8,10 @@
 #include <OXRS_MQTT.h>                // For MQTT pub/sub
 #include <OXRS_API.h>                 // For REST API
 
+// I2C
+#define       I2C_SDA                   21
+#define       I2C_SCL                   22
+
 // REST API
 #define       REST_API_PORT             80
 
