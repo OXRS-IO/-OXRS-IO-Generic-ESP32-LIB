@@ -249,31 +249,6 @@ void _mqttCallback(char * topic, byte * payload, int length)
 }
 
 /* Main program */
-void OXRS_32::setMqttBroker(const char * broker, uint16_t port)
-{
-  _mqtt.setBroker(broker, port);
-}
-
-void OXRS_32::setMqttClientId(const char * clientId)
-{
-  _mqtt.setClientId(clientId);
-}
-
-void OXRS_32::setMqttAuth(const char * username, const char * password)
-{
-  _mqtt.setAuth(username, password);
-}
-
-void OXRS_32::setMqttTopicPrefix(const char * prefix)
-{
-  _mqtt.setTopicPrefix(prefix);
-}
-
-void OXRS_32::setMqttTopicSuffix(const char * suffix)
-{
-  _mqtt.setTopicSuffix(suffix);
-}
-
 void OXRS_32::begin(jsonCallback config, jsonCallback command)
 {
   // Get our firmware details
@@ -326,14 +301,14 @@ void OXRS_32::setCommandSchema(JsonVariant json)
   _mergeJson(_fwCommandSchema.as<JsonVariant>(), json);
 }
 
-void OXRS_32::apiGet(const char * path, Router::Middleware * middleware)
+OXRS_MQTT * OXRS_32::getMQTT()
 {
-  _api.get(path, middleware);
+  return &_mqtt;
 }
 
-void OXRS_32::apiPost(const char * path, Router::Middleware * middleware)
+OXRS_API * OXRS_32::getAPI()
 {
-  _api.post(path, middleware);
+  return &_api;
 }
 
 boolean OXRS_32::publishStatus(JsonVariant json)
@@ -348,6 +323,32 @@ boolean OXRS_32::publishTelemetry(JsonVariant json)
   // Exit early if no network connection
   if (!_isNetworkConnected()) { return false; }
   return _mqtt.publishTelemetry(json);
+}
+
+bool OXRS_32::isHassDiscoveryEnabled()
+{
+  return _hassDiscoveryEnabled;
+}
+
+void OXRS_32::getHassDiscoveryJson(JsonVariant json, char * id)
+{
+  _mqtt.getHassDiscoveryJson(json, id);
+
+  // Update the firmware details
+  json["dev"]["mf"] = FW_MAKER;
+  json["dev"]["mdl"] = FW_NAME;
+  json["dev"]["sw"] = STRINGIFY(FW_VERSION);
+  json["dev"]["hw"] = "ESP32";
+}
+
+bool OXRS_32::publishHassDiscovery(JsonVariant json, char * component, char * id)
+{
+  // Exit early if Home Assistant discovery not enabled
+  if (!_hassDiscoveryEnabled) { return false; }
+
+  // Exit early if no network connection
+  if (!_isNetworkConnected()) { return false; }
+  return _mqtt.publishHassDiscovery(json, component, id);
 }
 
 size_t OXRS_32::write(uint8_t character)
