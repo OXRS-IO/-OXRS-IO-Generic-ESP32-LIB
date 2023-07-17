@@ -214,17 +214,6 @@ void _mqttDisconnected(int state)
 
 void _mqttConfig(JsonVariant json)
 {
-  // Home Assistant discovery config
-  if (json.containsKey("hassDiscoveryEnabled"))
-  {
-    _hassDiscoveryEnabled = json["hassDiscoveryEnabled"].as<bool>();
-  }
-
-  if (json.containsKey("hassDiscoveryTopicPrefix"))
-  {
-    _mqtt.setHassDiscoveryTopicPrefix(json["hassDiscoveryTopicPrefix"]);
-  }
-
   // Pass on to the firmware callback
   if (_onConfig) { _onConfig(json); }
 }
