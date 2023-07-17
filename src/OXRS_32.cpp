@@ -36,9 +36,6 @@ DynamicJsonDocument _fwCommandSchema(JSON_COMMAND_MAX_SIZE);
 jsonCallback _onConfig;
 jsonCallback _onCommand;
 
-// Home Assistant discovery config
-bool _hassDiscoveryEnabled = false;
-
 /* JSON helpers */
 void _mergeJson(JsonVariant dst, JsonVariantConst src)
 {
