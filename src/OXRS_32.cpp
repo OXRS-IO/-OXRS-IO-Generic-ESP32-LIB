@@ -339,32 +339,6 @@ boolean OXRS_32::publishTelemetry(JsonVariant json)
   return _mqtt.publishTelemetry(json);
 }
 
-bool OXRS_32::isHassDiscoveryEnabled()
-{
-  return _hassDiscoveryEnabled;
-}
-
-void OXRS_32::getHassDiscoveryJson(JsonVariant json, char * id)
-{
-  _mqtt.getHassDiscoveryJson(json, id);
-
-  // Update the firmware details
-  json["dev"]["mf"] = FW_MAKER;
-  json["dev"]["mdl"] = FW_NAME;
-  json["dev"]["sw"] = STRINGIFY(FW_VERSION);
-  json["dev"]["hw"] = "ESP32";
-}
-
-bool OXRS_32::publishHassDiscovery(JsonVariant json, char * component, char * id)
-{
-  // Exit early if Home Assistant discovery not enabled
-  if (!_hassDiscoveryEnabled) { return false; }
-
-  // Exit early if no network connection
-  if (!_isNetworkConnected()) { return false; }
-  return _mqtt.publishHassDiscovery(json, component, id);
-}
-
 size_t OXRS_32::write(uint8_t character)
 {
   // Pass to logger - allows firmware to use `GPIO32.println("Log this!")`
